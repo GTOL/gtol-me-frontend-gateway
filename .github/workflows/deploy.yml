@@ -40,7 +40,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }} << EOF
             set -e
-            cd "~/gtol-me-deploy"
+            cd "$HOME/gtol-me-deploy"
             docker load < /tmp/${{ env.TAR_NAME }}
             docker compose up -d
             rm -f /tmp/${{ env.TAR_NAME }}
