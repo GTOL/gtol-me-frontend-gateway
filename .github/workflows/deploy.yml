@@ -27,14 +27,14 @@ jobs:
           echo "TAR_NAME=$TAR_NAME" >> $GITHUB_ENV
           docker save ${{ env.TAG }} -o $TAR_NAME
 
-      - name: Upload image to server temp dir
-        run: |
-          scp -o StrictHostKeyChecking=no ${{ env.TAR_NAME }} ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/tmp/${{ env.TAR_NAME }}
-
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Upload image to server temp dir
+        run: |
+          scp -o StrictHostKeyChecking=no ${{ env.TAR_NAME }} ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/tmp/${{ env.TAR_NAME }}
 
       - name: Load and deploy on server
         run: |
