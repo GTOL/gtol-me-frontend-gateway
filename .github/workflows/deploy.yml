@@ -16,7 +16,7 @@ jobs:
 
       - name: Generate timestamped tag
         id: tag
-        run: echo "TAG=${IMAGE_NAME}:$(date +%s)" >> $GITHUB_ENV
+        run: echo "TAG=${{ env.IMAGE_NAME }}:$(date +%s)" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: docker build -t ${{ env.TAG }} .
@@ -42,6 +42,7 @@ jobs:
             set -e
             cd /home/${{ vars.SSH_USER }}/gtol-me-deploy
             docker load < /tmp/${{ env.TAR_NAME }}
+            docker tag ${{ env.TAG }} $IMAGE_NAME:latest
             docker compose up -d
             rm -f /tmp/${{ env.TAR_NAME }}
           EOF
