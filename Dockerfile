@@ -3,7 +3,10 @@ FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 
 COPY --chown=nginx:nginx html/ .
+
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/nginx.conf
+
+USER nginx
 
 EXPOSE 80
 
