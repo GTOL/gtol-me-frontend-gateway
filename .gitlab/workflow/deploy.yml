@@ -1,26 +1,47 @@
-name: Deploy Nginx
+name: Deploy gtol-me-gateway
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: gtol-me-gateway
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup SSH
+      - name: Generate timestamped tag
+        id: tag
+        run: echo "TAG=${IMAGE_NAME}:$(date +%s)" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.TAG }} .
+
+      - name: Save image to tar
+        run: |
+          TAR_NAME="image-${{ github.run_id }}.tar"
+          echo "TAR_NAME=$TAR_NAME" >> $GITHUB_ENV
+          docker save ${{ env.TAG }} -o $TAR_NAME
+
+      - name: Upload image to server temp dir
+        run: |
+          scp -o StrictHostKeyChecking=no ${{ env.TAR_NAME }} ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }}:/tmp/${{ env.TAR_NAME }}
+
+      - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Deploy via SSH
+      - name: Load and deploy on server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }} << 'EOF'
-            cd ~/my-blog-deploy
-            git pull
-            docker compose down
-            docker compose up -d --build
+          ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SSH_HOST }} << EOF
+            set -e
+            cd /home/${{ vars.SSH_USER }}/gtol-me-deploy
+            docker load < /tmp/${{ env.TAR_NAME }}
+            docker compose up -d
+            rm -f /tmp/${{ env.TAR_NAME }}
           EOF
