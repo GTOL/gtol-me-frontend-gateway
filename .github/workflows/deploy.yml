@@ -42,6 +42,6 @@ jobs:
             set -e
             cd /home/${{ vars.SSH_USER }}/gtol-me-deploy
             docker load < /tmp/${{ env.TAR_NAME }}
-            docker compose --pull never up -d
+            docker compose up -d
             rm -f /tmp/${{ env.TAR_NAME }}
           EOF
