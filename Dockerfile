@@ -6,7 +6,8 @@ COPY --chown=nginx:nginx html/ .
 
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/nginx.conf
 
-RUN chown -R nginx:nginx /var/cache/nginx
+RUN mkdir -p /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi && \
+    chown -R nginx:nginx /tmp
 
 USER nginx
 
